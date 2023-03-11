@@ -67,18 +67,17 @@ class PizzaController extends Controller
           ); */
 
         $pizza = new Pizza($request->all());
-        $ids = array_values($request->ingredients);
 
-
-
-        /* if($request->has('image')){
-            $path = date('Y') . '/' . date('m') . '/' . date('d');
-            $pizza->image = Storage::putFile($path, $request->image);
-        } */
+        if($request->hasFile('image')){
+            /* $path = date('Y') . '/' . date('m') . '/' . date('d');
+            $pizza->image = Storage::putFile($path, $request->image); */
+            $path = $request->file('image')->store('pizzas', 'public');
+            $pizza->image = $path;
+        }
 
         $pizza->save();
 
-        $pizza->ingredients()->sync($ids ,$pizza->id);
+        $pizza->ingredients()->sync($request->ingredients ,$pizza->id);
         return redirect()->route('pizzas.index');
         } catch (\Exception $e) {
             dd($e);
@@ -125,6 +124,12 @@ class PizzaController extends Controller
             /* $pizza = Pizza::find($id); */
             $pizza->fill($request->all());
             $pizza->ingredients()->sync($request->ingredients ,$pizza->id);
+            if($request->hasFile('image')){
+                $path = date('Y') . '/' . date('m') . '/' . date('d');
+                $file = $request->file('image');
+                $pizza->image = Storage::putFile($path, $file);
+
+            }
             $pizza->save();
 
             return redirect()->route('pizzas.index');

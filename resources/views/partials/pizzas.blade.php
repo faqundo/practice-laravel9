@@ -12,10 +12,12 @@
 <div class="container bg-gray-100 dark:bg-gray-900">
     <div class="row">
         @foreach ($pizzas as $pizza)
+            {{-- {{dd(Storage::disk('local')->url($pizza['image']))}} --}}
             <div class="card col" style="width: 15rem;">
+                <p>{{ asset('../storage/app/public/'.$pizza['image']) }}</p>
                 <img
                 @if (isset($pizza['image']))
-                    src={{$pizza['image']}}
+                    src={{ asset('../storage/app/public/'.$pizza['image']) }}
                 @else
                     src={{ asset('img/default.jpeg')}}
                 @endif
