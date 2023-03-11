@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Pizza as ResourcesPizza;
 use App\Models\Pizza;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -10,17 +11,26 @@ use Illuminate\Support\Facades\Validator;
 class PizzaController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $pizzas = Pizza::query();
-
-        #filters
-
-       return response()->json($pizzas->get());
+        $pizzas = Pizza::query()->get();
+        /* dd(ResourcesPizza::collection($pizzas)->toArray(request())); */
+        return view('partials.pizzas', ['pizzas' =>  ResourcesPizza::collection($pizzas)->toArray(request())]);
+       /* return response()->json($pizzas->get()); */
     }
 
     /**
@@ -30,7 +40,7 @@ class PizzaController extends Controller
      */
     public function create()
     {
-        //
+        dd('create');
     }
 
     /**
@@ -70,7 +80,7 @@ class PizzaController extends Controller
      */
     public function show($id)
     {
-        //
+        dd('show');
     }
 
     /**
@@ -79,9 +89,9 @@ class PizzaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Pizza $pizza)
     {
-        //
+        return view('partials.pizza',['pizza' => $pizza]);
     }
 
     /**
@@ -91,14 +101,15 @@ class PizzaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Pizza $pizza)
     {
+
         try {
-            $pizza = Pizza::find($id);
+            /* $pizza = Pizza::find($id); */
             $pizza->fill($request->all());
             $pizza->save();
 
-            return response()->json(['message' => 'Pizza update successfully']);
+            return redirect()->route('pizzas.index');
 
         } catch (\Exception $e) {
             return response()->json(['message' => $e]);

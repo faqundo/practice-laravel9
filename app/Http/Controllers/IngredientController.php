@@ -14,7 +14,11 @@ class IngredientController extends Controller
      */
     public function index()
     {
-        //
+        $ingredients = Ingredient::query();
+
+        #filters
+
+       return response()->json($ingredients->get());
     }
 
     /**

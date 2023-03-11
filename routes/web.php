@@ -23,4 +23,4 @@ Route::middleware(['auth'])->prefix('app')->group(function () {
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [App\Http\Controllers\PizzaController::class, 'index'])->name('home');
