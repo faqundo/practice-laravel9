@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\Pizza as ResourcesPizza;
+use App\Models\Ingredient;
 use App\Models\Pizza;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -40,7 +41,8 @@ class PizzaController extends Controller
      */
     public function create()
     {
-        dd('create');
+        $ingredients = Ingredient::all();
+        return view('partials.pizza', ['ingredients' => $ingredients]);
     }
 
     /**
@@ -51,7 +53,9 @@ class PizzaController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make(
+
+        try {
+          /*  $validator = Validator::make(
             [
                 'image'      => $request->image,
                 'extension' => strtolower($request->image->getClientOriginalExtension()),
@@ -60,16 +64,28 @@ class PizzaController extends Controller
                 'image'          => 'sometimes|nullable',
                 'extension'      => 'required|in:jpg,png',
             ]
-          );
+          ); */
 
         $pizza = new Pizza($request->all());
+        $ids = array_values($request->ingredients);
 
-        if($request->has('image')){
+
+
+        /* if($request->has('image')){
             $path = date('Y') . '/' . date('m') . '/' . date('d');
             $pizza->image = Storage::putFile($path, $request->image);
-        }
+        } */
 
         $pizza->save();
+
+        $pizza->ingredients()->sync($ids ,$pizza->id);
+        return redirect()->route('pizzas.index');
+        } catch (\Exception $e) {
+            dd($e);
+            return response()->json(['message' => $e]);
+        }
+
+
     }
 
     /**
@@ -91,7 +107,8 @@ class PizzaController extends Controller
      */
     public function edit(Pizza $pizza)
     {
-        return view('partials.pizza',['pizza' => $pizza]);
+        $ingredients = Ingredient::all();
+        return view('partials.pizza',['pizza' => $pizza, 'ingredients' => $ingredients]);
     }
 
     /**
@@ -107,6 +124,7 @@ class PizzaController extends Controller
         try {
             /* $pizza = Pizza::find($id); */
             $pizza->fill($request->all());
+            $pizza->ingredients()->sync($request->ingredients ,$pizza->id);
             $pizza->save();
 
             return redirect()->route('pizzas.index');
@@ -125,10 +143,11 @@ class PizzaController extends Controller
     public function destroy($id)
     {
         try {
-            $region = Pizza::find($id);
-            $region->delete();
+            $pizza = Pizza::findOrFail($id);
+            $pizza->ingredients()->detach();
+            $pizza->delete();
 
-            return response()->json(['message' => 'Pizza removed successfully']);
+            return redirect()->route('pizzas.index');
         } catch (\Exception $e) {
             return response()->json(['message' => $e]);
         }
